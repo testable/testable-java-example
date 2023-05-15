@@ -1,0 +1,44 @@
+plugins {
+    id 'application'
+    id 'java'
+}
+
+group = 'io.testable'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.testng:testng:6.14.3'
+}
+
+application {
+
+    mainClass = 'io.testable.example.MainSampleTest'
+}
+
+tasks.named('test') {
+    if (Boolean.getBoolean("isTestNG"))
+        useTestNG()
+    else
+        useJUnit()
+}
+
+tasks.register('uberTestJar', Jar) {
+    dependsOn testClasses
+    manifest {
+        attributes 'Main-Class': 'io.testable.example.MainSampleTest'
+    }
+    sourceSets.main.output.each {
+        from it
+    }
+    sourceSets.test.output.each {
+        from it
+    }
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    from { configurations.testRuntimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
